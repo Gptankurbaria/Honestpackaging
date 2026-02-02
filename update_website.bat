@@ -8,8 +8,7 @@ echo.
 E:
 cd "E:\0 Prexa\BOX Costing"
 
-:: 0. Configure Git Identity (Fixes 'Author identity unknown' error)
-:: We set this locally for this folder only.
+:: 0. Configure Git Identity
 git config user.email "auto@honestpackaging.com"
 git config user.name "Honest Packaging Admin"
 
@@ -20,7 +19,6 @@ if not exist ".git" (
     git branch -M main
     git remote add origin https://github.com/Gptankurbaria/Honestpackaging.git
 ) else (
-    :: Ensure remote is valid just in case
     git remote add origin https://github.com/Gptankurbaria/Honestpackaging.git 2>NUL
 )
 
@@ -30,8 +28,9 @@ git add .
 echo [2/3] Saving changes...
 git commit -m "Update from One-Click Script"
 
-echo [3/3] Uploading to GitHub...
-git push -u origin main
+echo [3/3] Uploading to GitHub (Forcing update)...
+:: Added -f to force overwrite remote if histories differ
+git push -f -u origin main
 
 echo.
 echo ==========================================
