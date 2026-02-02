@@ -23,6 +23,8 @@ if not exist ".git" (
 )
 
 echo [1/3] Adding files...
+:: Force add the database to ensure it uploads
+git add -f box_costing.db
 git add .
 
 echo [2/3] Saving changes...

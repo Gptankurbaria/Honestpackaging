@@ -16,6 +16,14 @@ def login_page():
             # Default to checking against the main Admin user "Ankur"
             user = db.query(User).filter(User.username == "Ankur").first()
             db.close()
+            
+            # DEBUGGING: Show if user exists
+            if not user:
+                 st.error("Debug: User 'Ankur' NOT found in database. The database file is likely missing.")
+            else:
+                 # Debug: verify hash
+                 # st.info(f"Debug: User found. ID: {user.id}")
+                 pass
 
             valid = False
             from passlib.context import CryptContext
