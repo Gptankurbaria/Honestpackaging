@@ -32,7 +32,8 @@ def login_page():
             if user and user.password_hash:
                 try:
                     valid = pwd_context.verify(password, user.password_hash)
-                except:
+                except Exception as e:
+                   st.error(f"Debug: Hash Error: {e}") # Reveal missing library error
                    valid = False
             
             if valid:
