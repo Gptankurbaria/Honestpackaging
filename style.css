@@ -1,0 +1,425 @@
+/* Main Background - Corrugated Beige */
+.stApp {
+    background-color: #F4EDE4;
+    font-family: 'Inter', 'Segoe UI', 'Roboto', sans-serif;
+    color: #2F2F2F;
+    /* Charcoal Grey */
+}
+
+/* Sidebar - Kraft Brown */
+[data-testid="stSidebar"] {
+    background-color: #8B5A2B;
+    border-right: 1px solid #704720;
+}
+
+[data-testid="stSidebar"] * {
+    color: #F4EDE4 !important;
+    /* Beige text for contrast on brown */
+}
+
+/* Sidebar Headers */
+[data-testid="stSidebar"] h1 {
+    color: #F4EDE4 !important;
+    font-size: 1.8rem !important;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 2rem;
+}
+
+/* Sidebar Navigation - Tablet Button Style */
+.st-emotion-cache-16txtl3 {
+    padding: 0;
+}
+
+[data-testid="stSidebar"] div[role="radiogroup"] {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-top: 10px;
+}
+
+/* Label Container */
+[data-testid="stSidebar"] div[role="radiogroup"] label {
+    background-color: transparent;
+    padding: 12px 16px;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    margin-bottom: 0px;
+    border: 1px solid rgba(244, 237, 228, 0.4);
+    /* Stronger Beige Border */
+    cursor: pointer;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* Center text */
+}
+
+[data-testid="stSidebar"] div[role="radiogroup"] label:hover {
+    background-color: rgba(244, 237, 228, 0.2);
+    border-color: #F4EDE4;
+}
+
+/* Hide the radio circle - Robust Selector */
+[data-testid="stSidebar"] div[role="radiogroup"] label>div:first-child {
+    display: none !important;
+}
+
+/* Active State */
+[data-testid="stSidebar"] div[role="radiogroup"] label:has(div[aria-checked="true"]) {
+    background-color: #F4EDE4 !important;
+    /* Solid Beige */
+    border-color: #F4EDE4 !important;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    transform: translateY(-1px);
+}
+
+/* Active Text */
+[data-testid="stSidebar"] div[role="radiogroup"] label:has(div[aria-checked="true"]) p {
+    color: #8B5A2B !important;
+    /* Brown Text */
+    font-weight: 700 !important;
+}
+
+/* Inactive Text */
+[data-testid="stSidebar"] div[role="radiogroup"] label p {
+    color: #F4EDE4 !important;
+    /* Beige Text */
+    font-weight: 500;
+    margin: 0;
+}
+
+/* Primary Headings - Kraft Brown */
+h1 {
+    color: #8B5A2B;
+    font-weight: 800;
+    padding-bottom: 10px;
+}
+
+h2,
+h3 {
+    color: #8B5A2B;
+    /* Headers Kraft Brown */
+    font-weight: 600;
+}
+
+/* Subheaders */
+h3 {
+    font-size: 1.25rem !important;
+    border-bottom: 2px solid #8B5A2B;
+    padding-bottom: 0.5rem;
+    margin-top: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+/* Buttons - Machine Green */
+.stButton>button {
+    background-color: #2E7D32;
+    /* Machine Green */
+    color: white !important;
+    border-radius: 8px;
+    border: none;
+    font-weight: 600;
+    padding: 0.5rem 1rem;
+    box-shadow: 0 2px 5px rgba(46, 125, 50, 0.3);
+    transition: all 0.2s;
+}
+
+.stButton>button:hover {
+    background-color: #1b5e20;
+    /* Darker Green */
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(46, 125, 50, 0.4);
+}
+
+.stButton>button:active {
+    transform: translateY(0);
+}
+
+/* Metrics Cards */
+[data-testid="stMetric"] {
+    background-color: #FFFFFF;
+    border: 1px solid #D7CCC8;
+    /* Light brown border */
+    border-radius: 10px;
+    padding: 15px !important;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    border-left: 5px solid #2E7D32;
+    /* Green Accent */
+    transition: transform 0.2s;
+}
+
+[data-testid="stMetric"]:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+}
+
+[data-testid="stMetricValue"] {
+    color: #2F2F2F;
+    font-size: 1.8rem !important;
+    font-weight: 700;
+}
+
+[data-testid="stMetricLabel"] {
+    color: #5D4037;
+    /* Dark Brown Text */
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+/* Inputs */
+.stTextInput>div>div,
+.stNumberInput>div>div,
+.stSelectbox>div>div,
+.stTextArea>div>div {
+    border-radius: 6px;
+    border: 1px solid #BCAAA4;
+    background-color: #FFFFFF;
+    color: #2F2F2F;
+}
+
+.stTextInput>div>div:focus-within,
+.stNumberInput>div>div:focus-within,
+.stSelectbox>div>div:focus-within,
+.stTextArea>div>div:focus-within {
+    border-color: #8B5A2B;
+    box-shadow: 0 0 0 1px #8B5A2B;
+}
+
+/* Expander */
+.streamlit-expanderHeader {
+    background-color: #EFEBE9;
+    border-radius: 6px;
+    color: #4E342E;
+    font-weight: 600;
+}
+
+/* Success/Info Messages */
+.stAlert {
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+/* Hide +/- Buttons */
+div[data-testid="stNumberInput"] button {
+    display: none !important;
+}
+
+div[data-testid="stNumberInput"]>div>div>div {
+    padding-right: 0 !important;
+}
+
+/* Custom Utilities */
+.separator {
+    height: 1px;
+    background-color: #8B5A2B;
+    margin: 20px 0;
+    opacity: 0.3;
+}
+
+/* Sidebar - Modern Dark */
+[data-testid="stSidebar"] {
+    background-color: #1E1E2E;
+    /* Deep Blue-Black */
+    border-right: 1px solid #2d2d44;
+}
+
+[data-testid="stSidebar"] * {
+    color: #E0E0E0 !important;
+}
+
+[data-testid="stSidebar"] h1 {
+    color: #FFB74D !important;
+    /* Soft Gold/Orange */
+    font-size: 1.8rem !important;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 2rem;
+}
+
+/* Sidebar Navigation Radio Buttons */
+/* Sidebar Navigation - Tablet Button Style */
+.st-emotion-cache-16txtl3 {
+    padding: 0;
+}
+
+[data-testid="stSidebar"] div[role="radiogroup"] {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-top: 10px;
+}
+
+[data-testid="stSidebar"] div[role="radiogroup"] label {
+    background-color: transparent;
+    /* Default background */
+    padding: 12px 16px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    margin-bottom: 0px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    cursor: pointer;
+    font-size: 1rem;
+    display: flex;
+    /* Ensure alignment */
+    align-items: center;
+}
+
+[data-testid="stSidebar"] div[role="radiogroup"] label:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Hide the radio circle */
+[data-testid="stSidebar"] div[role="radiogroup"] label div[role="radio"] {
+    display: none;
+}
+
+/* Selected State */
+[data-testid="stSidebar"] div[role="radiogroup"] label[data-baseweb="radio"] {
+    /* This selector is tricky in some versions, relying on aria-checked logic below usually better but that targets the radio div itself not the label container directly easily without :has() support universally */
+    /* Streamlit creates a structure: label -> div(row) -> div(radio) + div(text). We want to style the label based on selection */
+}
+
+/* Since CSS :has() is widely supported now, let's use it for the active state on the label */
+[data-testid="stSidebar"] div[role="radiogroup"] label:has(div[aria-checked="true"]) {
+    background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%);
+    border-color: #FF9800;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+}
+
+/* Selected Text */
+[data-testid="stSidebar"] div[role="radiogroup"] label:has(div[aria-checked="true"]) p {
+    color: #FFFFFF !important;
+    font-weight: 700;
+}
+
+/* Unselected Text */
+[data-testid="stSidebar"] div[role="radiogroup"] label p {
+    color: #B0B0C0 !important;
+    font-weight: 500;
+    margin: 0;
+    /* Remove default margins */
+}
+
+/* Primary Headings */
+h1 {
+    color: #2C3E50;
+    font-weight: 800;
+    padding-bottom: 10px;
+}
+
+h2,
+h3 {
+    color: #34495E;
+    font-weight: 600;
+}
+
+/* Subheaders */
+h3 {
+    font-size: 1.25rem !important;
+    border-bottom: 2px solid #E0E0E0;
+    padding-bottom: 0.5rem;
+    margin-top: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+/* Buttons - Vibrant & Modern */
+.stButton>button {
+    background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%);
+    color: white !important;
+    border-radius: 8px;
+    border: none;
+    font-weight: 600;
+    padding: 0.5rem 1rem;
+    box-shadow: 0 2px 5px rgba(245, 124, 0, 0.3);
+    transition: all 0.2s;
+}
+
+.stButton>button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(245, 124, 0, 0.4);
+}
+
+.stButton>button:active {
+    transform: translateY(0);
+}
+
+/* Secondary Button (if any) outline */
+/* Metrics Cards - The "Top Dashboard" feel */
+[data-testid="stMetric"] {
+    background-color: #FFFFFF;
+    border: 1px solid #EAEAEA;
+    border-radius: 10px;
+    padding: 15px !important;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    border-left: 5px solid #FF9800;
+    /* Accent strip */
+    transition: transform 0.2s;
+}
+
+[data-testid="stMetric"]:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+}
+
+[data-testid="stMetricValue"] {
+    color: #1E1E2E;
+    font-size: 1.8rem !important;
+    font-weight: 700;
+}
+
+[data-testid="stMetricLabel"] {
+    color: #757575;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+/* Inputs - Clean Fields */
+.stTextInput>div>div,
+.stNumberInput>div>div,
+.stSelectbox>div>div {
+    border-radius: 6px;
+    border: 1px solid #CFD8DC;
+    background-color: #FFFFFF;
+}
+
+.stTextInput>div>div:focus-within,
+.stNumberInput>div>div:focus-within,
+.stSelectbox>div>div:focus-within {
+    border-color: #FF9800;
+    box-shadow: 0 0 0 1px #FF9800;
+}
+
+/* Expander - Cleaner look */
+.streamlit-expanderHeader {
+    background-color: #F1F3F4;
+    border-radius: 6px;
+    color: #37474F;
+    font-weight: 600;
+}
+
+/* Success/Info Messages */
+.stAlert {
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+/* Hide +/- Buttons on Number Inputs */
+div[data-testid="stNumberInput"] button {
+    display: none !important;
+}
+
+div[data-testid="stNumberInput"]>div>div>div {
+    padding-right: 0 !important;
+}
+
+/* Custom Utilities */
+.separator {
+    height: 1px;
+    background-color: #E0E0E0;
+    margin: 20px 0;
+}.  
+ 
