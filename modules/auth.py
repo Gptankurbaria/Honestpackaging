@@ -4,6 +4,7 @@ from models import User
 
 def login_page():
     st.title("Login")
+    st.caption("v1.2 (Updated)") # Version Check
     
     with st.form("login_form"):
         # Username removed as per request
