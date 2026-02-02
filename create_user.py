@@ -4,7 +4,8 @@ from models import User
 import sys
 import argparse
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+# Switched to pbkdf2_sha256
+pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
 
 def create_user(username, password, role):
     db = SessionLocal()

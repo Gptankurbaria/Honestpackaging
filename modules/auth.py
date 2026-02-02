@@ -27,13 +27,14 @@ def login_page():
 
             valid = False
             from passlib.context import CryptContext
-            pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+            # Switched to pbkdf2_sha256 to avoid bcrypt 72-byte limit/dependency issues on Cloud
+            pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
 
             if user and user.password_hash:
                 try:
                     valid = pwd_context.verify(password, user.password_hash)
                 except Exception as e:
-                   st.error(f"Debug: Hash Error: {e}") # Reveal missing library error
+                   # st.error(f"Debug: Hash Error: {e}") 
                    valid = False
             
             if valid:
