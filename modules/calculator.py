@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import os
 from database import SessionLocal
 from models import Party, PaperRate, OperationRate
 from modules.pdf_utils import generate_quotation_pdf, generate_whatsapp_link
@@ -31,6 +32,7 @@ def calculator_page():
             with st.form("new_party_form"):
                 new_p_name = st.text_input("Party Name")
                 new_p_mobile = st.text_input("Mobile Number")
+                new_p_email = st.text_input("Email Address")
                 new_p_address = st.text_area("Address", height=100)
                 new_p_margin = st.number_input("Default Margin (%)", value=10.0, step=0.5)
                 submit_new_party = st.form_submit_button("Save New Party")
@@ -41,6 +43,7 @@ def calculator_page():
                             new_party = Party(
                                 name=new_p_name,
                                 mobile_number=new_p_mobile,
+                                email=new_p_email,
                                 address=new_p_address,
                                 default_margin=new_p_margin,
                                 is_active=True
@@ -673,7 +676,6 @@ def calculator_page():
                 import platform
                 if platform.system() == "Windows":
                     if st.button("📂 Open PDF Folder (Local Host Only)"):
-                        import os
                         folder_path = os.path.abspath("PDF")
                         try:
                             os.startfile(folder_path)
@@ -689,5 +691,43 @@ def calculator_page():
             if c3.button("Start New Quotation"):
                 del st.session_state['last_saved_q_id']
                 st.rerun()
+
+            # --- Email Section ---
+            st.divider()
+            st.subheader("📧 Email Quotation")
+            
+            c_email1, c_email2 = st.columns([3, 1])
+            default_email = saved_q.party.email if saved_q.party and saved_q.party.email else ""
+            recipient_email = c_email1.text_input("Recipient Email", value=default_email, placeholder="client@example.com")
+            
+            if c_email2.button("Send Email 📤"):
+                if recipient_email:
+                    from modules.email_utils import send_email_with_pdf
+                    
+                    email_subject = f"Quotation {saved_q.quotation_number} from Honest Packaging"
+                    email_body = f"""Hello {saved_q.party.name},
+
+Please find attached the quotation {saved_q.quotation_number} as discussed.
+
+Best Regards,
+Honest Packaging
+"""
+                    # Use the path we just defined/ensured
+                    # save_path from above scope might be available if defined in same block
+                    # Re-construct to be safe or reuse variable
+                    pdf_dir = "PDF"
+                    pdf_full_path = os.path.join(pdf_dir, f"{saved_q.quotation_number}.pdf")
+                    
+                    if os.path.exists(pdf_full_path):
+                        with st.spinner("Sending Email..."):
+                            if send_email_with_pdf(recipient_email, email_subject, email_body, pdf_full_path):
+                                st.success(f"Email sent successfully to {recipient_email}!")
+                            else:
+                                st.error("Failed to send email. Check SMTP configuration.")
+                    else:
+                        st.error("PDF file not found for attachment.")
+                else:
+                    st.warning("Please enter an email address.")
+
 
     db.close()
