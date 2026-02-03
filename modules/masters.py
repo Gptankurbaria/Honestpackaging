@@ -14,7 +14,8 @@ def party_creation_page():
     address = col2.text_input("Address")
     mobile = col1.text_input("Mobile Number")
     gst = col2.text_input("GST Number")
-    margin = col1.number_input("Default Margin (%)", value=10.0)
+    email = col1.text_input("Email Address")
+    margin = col2.number_input("Default Margin (%)", value=10.0)
     transport_logic = st.selectbox("Transport Rate Logic", ["per_kg", "per_trip", "fixed"])
     
     st.markdown("###")
@@ -25,6 +26,7 @@ def party_creation_page():
                 address=address, 
                 mobile_number=mobile,
                 gst_number=gst, 
+                email=email,
                 default_margin=margin, 
                 transport_rate_logic=transport_logic
             )
@@ -48,6 +50,7 @@ def _party_master_subpage():
             "Address": p.address, 
             "Mobile": p.mobile_number, 
             "GST": p.gst_number, 
+            "Email": p.email,
             "Margin": p.default_margin, 
             "Transport": p.transport_rate_logic
         } for p in parties]
@@ -63,7 +66,8 @@ def _party_master_subpage():
                     help="Contact Number",
                     validate="^[0-9]*$", # Basic validation
                     required=False
-                )
+                ),
+                "Email": st.column_config.TextColumn("Email")
             }, 
             disabled=["ID"], 
             use_container_width=True,
@@ -83,6 +87,7 @@ def _party_master_subpage():
                         p_obj.address = row["Address"]
                         p_obj.mobile_number = row["Mobile"]
                         p_obj.gst_number = row["GST"]
+                        p_obj.email = row["Email"]
                         p_obj.default_margin = row["Margin"]
                         p_obj.transport_rate_logic = row["Transport"]
                 # Else handle new... logic omitted for simplicity unless requested

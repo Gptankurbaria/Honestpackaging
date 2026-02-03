@@ -17,6 +17,7 @@ class Party(Base):
     address = Column(String)
     mobile_number = Column(String)
     gst_number = Column(String)
+    email = Column(String) # For auto-emailing
     default_margin = Column(Float, default=10.0)
     transport_rate_logic = Column(String, default="per_kg") # per_kg, per_trip, fixed
     is_active = Column(Boolean, default=True)
