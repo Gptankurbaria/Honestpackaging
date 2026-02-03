@@ -65,5 +65,26 @@ elif selected_menu == "4. User Details":
     st.write(f"**Current User:** {st.session_state.get('username', 'Unknown')}")
     st.write(f"**Role:** {st.session_state.get('user_role', 'Unknown')}")
     st.divider()
-    st.info("User profile management is coming soon.")
+    st.divider()
+    
+    st.subheader("📧 Email Configuration Setup")
+    st.markdown("""
+    To enable email functionality, you need to configure your SMTP settings in the secrets file.
+    
+    **1. Locate/Create Secrets File:**
+    - **Local:** `.streamlit/secrets.toml` inside your project folder.
+    - **Cloud:** App Dashboard -> Settings -> Secrets.
+    
+    **2. Configuration Format:**
+    Copy and paste the following into the file:
+    ```toml
+    [smtp]
+    server = "smtp.gmail.com"
+    port = 587
+    username = "your_email@gmail.com"
+    password = "your_app_password"
+    ```
+    
+    > **Note:** For Gmail, use an **App Password** (enabled in Google Account > Security), NOT your login password.
+    """)
 
