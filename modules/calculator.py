@@ -642,15 +642,19 @@ def calculator_page():
             # PDF Generation
             pdf_bytes = generate_quotation_pdf(saved_q, saved_q.items, saved_q.party)
             
-            # Use 'E:/0 Prexa/BOX Costing/PDF' as requested. Using forward slashes for python compatibility.
-            # Ideally verify OS but user environment is known.
-            save_path = f"E:\\0 Prexa\\BOX Costing\\PDF\\{saved_q.quotation_number}.pdf"
+            # Use relative path for cloud compatibility
+            # Ensure directory exists
+            pdf_dir = "PDF"
+            if not os.path.exists(pdf_dir):
+                os.makedirs(pdf_dir)
+                
+            save_path = os.path.join(pdf_dir, f"{saved_q.quotation_number}.pdf")
             try:
                 with open(save_path, "wb") as f:
                     f.write(pdf_bytes.getvalue())
-                st.success(f"PDF automatically saved to: {save_path}")
+                st.success(f"PDF archived to server at: {save_path}")
             except Exception as e:
-                st.warning(f"Could not auto-save to E: drive: {e}")
+                st.warning(f"Could not archive PDF: {e}")
             
             c1.download_button(
                 label="📄 Download PDF",
@@ -665,15 +669,20 @@ def calculator_page():
                 c2.markdown(f'<a href="{wa_link}" target="_blank" style="text-decoration:none;"><button style="background-color:#25D366; color:white; border:none; padding:0.5rem 1rem; border-radius:4px; font-weight:bold;">Example: Share on WhatsApp</button></a>', unsafe_allow_html=True)
                 c2.caption("Note: Attach PDF manually.")
                 
-                # Helper to open folder
-                if st.button("📂 Open PDF Folder"):
-                    import os
-                    folder_path = r"E:\0 Prexa\BOX Costing\PDF"
-                    try:
-                        os.startfile(folder_path)
-                        st.toast("Folder Opened!", icon="📂")
-                    except Exception as e:
-                        st.error(f"Could not open folder: {e}")
+                # Helper to open folder (Localhost Windows Only)
+                import platform
+                if platform.system() == "Windows":
+                    if st.button("📂 Open PDF Folder (Local Host Only)"):
+                        import os
+                        folder_path = os.path.abspath("PDF")
+                        try:
+                            os.startfile(folder_path)
+                            st.toast("Folder Opened!", icon="📂")
+                        except Exception as e:
+                            st.error(f"Could not open folder: {e}")
+                else:
+                    # On Cloud/Linux, this button is useless/dangerous
+                    pass
             else:
                 c2.info("No mobile number for party.")
                 
