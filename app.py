@@ -59,7 +59,7 @@ elif selected_menu == "3. Masters":
     masters_page()
 
 elif selected_menu == "4. User Details":
-    from modules.masters import party_master_page # Fallback or implementation
+    # from modules.masters import party_master_page # Removed invalid import
     # User Details logic
     st.title("User Details")
     st.write(f"**Current User:** {st.session_state.get('username', 'Unknown')}")
