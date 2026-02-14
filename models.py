@@ -57,6 +57,7 @@ class QuotationItem(Base):
     quotation_id = Column(Integer, ForeignKey("quotations.id"))
     
     # Box Specs
+    box_name = Column(String)
     box_type = Column(String)
     length = Column(Float)
     width = Column(Float)

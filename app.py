@@ -1,5 +1,6 @@
 import streamlit as st
-from database import init_db
+from database import init_db, SessionLocal
+from models import User
 # from modules.masters import masters_page
 # from modules.calculator import calculator_page # To be implemented
 # from modules.reports import reports_page # To be implemented
@@ -65,6 +66,63 @@ elif selected_menu == "4. User Details":
     st.write(f"**Current User:** {st.session_state.get('username', 'Unknown')}")
     st.write(f"**Role:** {st.session_state.get('user_role', 'Unknown')}")
     st.divider()
+    st.divider()
+    
+    # User Management Section
+    if st.session_state.get("user_role") == "Admin":
+        st.divider()
+        st.subheader("👤 User Management")
+        
+        db = SessionLocal()
+        users = db.query(User).all()
+        
+        # Add New User
+        with st.expander("➕ Add New User"):
+            with st.form("add_user_form"):
+                new_user = st.text_input("Username")
+                new_pass = st.text_input("Password", type="password")
+                new_role = st.selectbox("Role", ["Admin", "Accountant", "Sales"])
+                if st.form_submit_button("Create User"):
+                    if new_user and new_pass:
+                        from passlib.context import CryptContext
+                        pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
+                        hashed_pw = pwd_context.hash(new_pass)
+                        
+                        user_exists = db.query(User).filter(User.username == new_user).first()
+                        if user_exists:
+                            st.error(f"User '{new_user}' already exists.")
+                        else:
+                            u = User(username=new_user, password_hash=hashed_pw, role=new_role)
+                            db.add(u)
+                            db.commit()
+                            st.success(f"User '{new_user}' created!")
+                            st.rerun()
+                    else:
+                        st.error("Username and Password are required.")
+
+        # List Users
+        st.markdown("---")
+        u_cols = st.columns([2, 2, 1])
+        u_cols[0].markdown("**Username**")
+        u_cols[1].markdown("**Role**")
+        u_cols[2].markdown("**Action**")
+        
+        for u in users:
+            row = st.columns([2, 2, 1])
+            row[0].write(u.username)
+            row[1].write(u.role)
+            # Prevent deleting yourself
+            if u.username != st.session_state.get("username"):
+                if row[2].button("🗑️", key=f"del_u_{u.id}", help=f"Delete {u.username}"):
+                    db.delete(u)
+                    db.commit()
+                    st.toast(f"User {u.username} deleted.")
+                    st.rerun()
+            else:
+                row[2].caption("(Current)")
+        
+        db.close()
+
     st.divider()
     
     st.subheader("📧 Email Configuration Setup")

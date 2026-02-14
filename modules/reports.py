@@ -21,17 +21,18 @@ def reports_page():
         
         # --- HEADER ---
         # Adjust column ratios using st.columns
-        # Actions | Date | Q No | Party | Sizes | Qty | Amount | Status | Del
-        h_cols = st.columns([2.5, 1.2, 1, 2, 2, 0.8, 1, 1.5, 0.5])
+        # Actions | Date | Q No | Party | Sizes | Qty | Rate | Amount | Status | Del
+        h_cols = st.columns([2.5, 1.1, 0.9, 1.8, 1.8, 0.6, 0.9, 1, 1.2, 0.4])
         h_cols[0].markdown("**Actions**")
         h_cols[1].markdown("**Date**")
         h_cols[2].markdown("**Q No**")
         h_cols[3].markdown("**Party**")
         h_cols[4].markdown("**Sizes**")
         h_cols[5].markdown("**Qty**")
-        h_cols[6].markdown("**Amount**")
-        h_cols[7].markdown("**Status**")
-        h_cols[8].markdown("**Del**")
+        h_cols[6].markdown("**Rate**")
+        h_cols[7].markdown("**Amount**")
+        h_cols[8].markdown("**Status**")
+        h_cols[9].markdown("**Del**")
         
         st.divider()
         
@@ -39,6 +40,10 @@ def reports_page():
             count = 0
             for q in quotations:
                 party_name = q.party.name if q.party else "Unknown"
+                
+                # Fetch first item rate for display/edit (assuming single item focus for now)
+                first_item = q.items[0] if q.items else None
+                current_rate = first_item.selling_price if first_item else 0
                 
                 # aggregate sizes and qtys
                 size_list = []
@@ -65,9 +70,9 @@ def reports_page():
 
                 # --- ROW RENDER ---
                 with st.container():
-                    c = st.columns([2.5, 1.2, 1, 2, 2, 0.8, 1, 1.5, 0.5])
+                    c = st.columns([2.5, 1.1, 0.9, 1.8, 1.8, 0.6, 0.9, 1, 1.2, 0.4])
                     
-                    # 1. Actions (PDF, WA, Email) - View removed
+                    # 1. Actions
                     with c[0]:
                         ac_cols = st.columns([1, 1, 1])
                         
@@ -129,16 +134,36 @@ def reports_page():
                     # 6. Qty
                     c[5].write(qtys)
                     
-                    # 7. Amount
-                    c[6].write(f"{q.total_amount:.0f}")
+                    # 7. Rate (Editable)
+                    with c[6]:
+                        if st.button(f"{current_rate:.2f} ✏️", key=f"rate_edit_{q.id}", help="Edit Unit Rate"):
+                             st.session_state[f"editing_rate_{q.id}"] = True
+                        
+                        if st.session_state.get(f"editing_rate_{q.id}", False):
+                            with st.expander("Edit Rate", expanded=True):
+                                new_rate = st.number_input("Unit Rate", value=float(current_rate), step=0.01, key=f"nr_{q.id}")
+                                if st.button("Save", key=f"sr_{q.id}"):
+                                    if first_item:
+                                        first_item.selling_price = new_rate
+                                        # Recalculate total amount for quotation
+                                        q.total_amount = sum(item.selling_price * item.quantity for item in q.items)
+                                        db.commit()
+                                        st.session_state[f"editing_rate_{q.id}"] = False
+                                        st.rerun()
+                                if st.button("X", key=f"cr_{q.id}"):
+                                    st.session_state[f"editing_rate_{q.id}"] = False
+                                    st.rerun()
+
+                    # 8. Amount (Display)
+                    c[7].write(f"{q.total_amount:.0f}")
                     
-                    # 8. Status
+                    # 9. Status
                     current_status = q.status
                     status_opts = ["Draft", "Finalised", "Dispatched", "Billed"]
                     if current_status not in status_opts:
                         status_opts.append(current_status)
                         
-                    new_status = c[7].selectbox(
+                    new_status = c[8].selectbox(
                         "Status", 
                         status_opts, 
                         index=status_opts.index(current_status), 
@@ -147,12 +172,21 @@ def reports_page():
                     )
                     
                     if new_status != current_status:
-                        q.status = new_status
-                        db.commit()
-                        st.toast(f"Updated status to {new_status}")
+                        if new_status == "Finalised":
+                            with c[8]:
+                                if st.button(f"Confirm {new_status}?", key=f"conf_stat_{q.id}"):
+                                    q.status = new_status
+                                    db.commit()
+                                    st.toast(f"Updated status to {new_status}")
+                                    st.rerun()
+                        else:
+                            q.status = new_status
+                            db.commit()
+                            st.toast(f"Updated status to {new_status}")
+                            st.rerun()
                     
-                    # 9. Delete
-                    if c[8].button("🗑️", key=f"del_{q.id}", help="Delete Quotation"):
+                    # 10. Delete
+                    if c[9].button("🗑️", key=f"del_{q.id}", help="Delete Quotation"):
                          if q.status == "Draft":
                              db.query(QuotationItem).filter(QuotationItem.quotation_id == q.id).delete(synchronize_session=False)
                              db.query(Quotation).filter(Quotation.id == q.id).delete(synchronize_session=False)

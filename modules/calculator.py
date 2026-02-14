@@ -77,6 +77,8 @@ def calculator_page():
             # 2. Box Specifications
             st.subheader("Box Specifications")
             
+            box_name_input = st.text_input("Box Name", placeholder="e.g. Master Carton, 5kg Box", value="")
+            
             # Unit Switcher
             unit_selection = st.radio("Input Unit", ["Inch", "mm"], horizontal=True)
             
@@ -491,73 +493,54 @@ def calculator_page():
         material_cost_per_sheet = (area_sqm * total_material_cost_per_sqm) / 1000
         material_cost = material_cost_per_sheet * sheets_per_box * (1 + wastage_pct/100) # Include wastage in cost
 
-        st.subheader("Pricing Tiers")
+        st.subheader("Order Configuration")
+        c_q1, c_q2, c_q3 = st.columns(3)
+        selected_qty = c_q1.number_input("Order Quantity", min_value=1, value=1000, step=100)
         
-        # Default tier data
-        if "pricing_tiers" not in st.session_state:
-             st.session_state["pricing_tiers"] = pd.DataFrame([
-                {"Quantity": 1000, "Margin (%)": default_margin},
-                {"Quantity": 2000, "Margin (%)": default_margin},
-                {"Quantity": 5000, "Margin (%)": default_margin - 2.0}
-             ])
+        # Suggested margin logic
+        if selected_qty <= 1000:
+            s_margin = 35.0
+        elif selected_qty <= 2000:
+            s_margin = 30.0
+        elif selected_qty <= 5000:
+            s_margin = 25.0
+        else:
+            s_margin = 20.0
+            
+        margin_input = c_q2.number_input("Margin (%)", value=s_margin, step=0.5, key="margin_val")
 
-        edited_tiers = st.data_editor(st.session_state["pricing_tiers"], num_rows="dynamic", use_container_width=True)
-        st.session_state["pricing_tiers"] = edited_tiers
+        # Initial calculation for total cost
+        amortized_fixed = total_fixed_cost / selected_qty if selected_qty > 0 else 0
+        total_cost = material_cost + variable_conversion_cost + amortized_fixed
+        
+        # Calculated selling price based on margin
+        calc_sp = total_cost / (1 - (margin_input/100)) if margin_input < 100 else 0
+        
+        # Final Rate Override (The "Button" area)
+        final_rate = c_q3.number_input("Final Rate (₹/Box)", value=float(round(calc_sp, 2)), step=0.1)
+        
+        # If final rate is changed manually, update margin_input logic (optional, keeping it simple for now as requested)
+        selling_price = final_rate
+        profit = selling_price - total_cost
+        total_value = selling_price * selected_qty
+        
+        # Update margin based on final rate for record keeping
+        current_margin = ((selling_price - total_cost) / selling_price * 100) if selling_price > 0 else 0
+        margin_input = current_margin # Update for saving to DB
 
-        # Calculate Results for Tiers
-        tier_results = []
-        
-        for index, row in edited_tiers.iterrows():
-            qty = row["Quantity"]
-            margin_pct = row["Margin (%)"]
-            
-            # Amortize Fixed Cost
-            amortized_fixed = total_fixed_cost / qty if qty > 0 else 0
-            
-            # Total Cost Per Box = Material + Variable Ops + Amortized Fixed
-            total_cost_per_box = material_cost + variable_conversion_cost + amortized_fixed
-            
-            selling_price = total_cost_per_box / (1 - (margin_pct/100)) if margin_pct < 100 else 0
-            profit = selling_price - total_cost_per_box
-            total_value = selling_price * qty
-            
-            tier_results.append({
-                "Quantity": int(qty),
-                "Base Cost/Box": round(total_cost_per_box, 2),
-                "Margin (%)": margin_pct,
-                "Selling Price": round(selling_price, 2),
-                "Profit/Box": round(profit, 2),
-                "Total Value": round(total_value, 2)
-            })
-            
-        results_df = pd.DataFrame(tier_results)
-        
-        # Display Results Table
-        st.markdown("### Cost Analysis")
-        st.dataframe(results_df, use_container_width=True)
-
-        # Select Quantity for final context
-        st.subheader("Select Quantity for Quotation")
-        selected_qty = st.selectbox("Select Quantity", results_df["Quantity"].tolist())
-        
-        # Get selected row
-        sel_row = results_df[results_df["Quantity"] == selected_qty].iloc[0]
-        
-        # Assign to variables compatible with downstream logic
-        selling_price = sel_row["Selling Price"]
-        total_cost = sel_row["Base Cost/Box"]
-        profit = sel_row["Profit/Box"]
-        margin_input = sel_row["Margin (%)"]
-        conversion_cost = variable_conversion_cost + (total_fixed_cost / selected_qty if selected_qty > 0 else 0)
+        conversion_cost = variable_conversion_cost + amortized_fixed
 
     # --- RESULTS SECTION (Top) ---
     with results_container:
         st.subheader("Quotation Summary")
         m1, m2, m3, m4 = st.columns(4)
-        m1.metric(f"Weight ({sheets_per_box} PC)", f"{final_weight_kg:.3f} kg")
+        m1.metric("Order Qty", f"{selected_qty} Nos")
         m2.metric("Total Cost", f"₹{total_cost:.2f}")
-        m3.metric("Selling Price", f"₹{selling_price:.2f}")
-        m4.metric("Profit", f"₹{profit:.2f}")
+        m3.metric("Final Rate", f"₹{selling_price:.2f}")
+        m4.metric("Total Value", f"₹{total_value:.2f}")
+    
+    # Update weight metric for clarity
+    st.sidebar.markdown(f"**Box Weight:** {final_weight_kg:.3f} kg")
     
     # 8. Save Quotation
     st.divider()
@@ -606,6 +589,7 @@ def calculator_page():
                 # Create Item
                 new_item = QuotationItem(
                     quotation_id=new_quotation.id,
+                    box_name=box_name_input,
                     box_type="RSC", # Default for now
                     length=length,
                     width=width,

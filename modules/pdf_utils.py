@@ -52,8 +52,8 @@ def generate_quotation_pdf(quotation, items, party):
     elements.append(Spacer(1, 0.3 * inch))
     
     # --- Items Table ---
-    # Columns: SN, Size (LxWxH) [Inch], Specification, Ply, Qty, Rate, Amount
-    data = [['SN', 'Size (Inch)', 'Specification', 'Ply', 'Qty', 'Rate (Rs)', 'Amount (Rs)']]
+    # Columns: SN, Name & Size (Inch), Specification, Ply, Qty, Rate, Amount
+    data = [['SN', 'Name & Size (Inch)', 'Specification', 'Ply', 'Qty', 'Rate (Rs)', 'Amount (Rs)']]
     
     for idx, item in enumerate(items, 1):
         # Size Logic: stored values (item.length, etc.) are always in MM.
@@ -72,6 +72,12 @@ def generate_quotation_pdf(quotation, items, party):
         # Actually user example was 12X8X6, so let's stick to .1f or .0f if close.
         # Re-reading prompt "it must be 12X8X6".
         size_str = f"{l:.1f} x {w:.1f} x {h:.1f}"
+        if item.box_name:
+            label_str = f"{item.box_name}\n({size_str})"
+        else:
+            label_str = size_str
+            
+        label_para = Paragraph(label_str, normal_style)
         
         # Specification Logic (Paper Type + GSM)
         # item.layer_details is a list of dicts or None
@@ -99,7 +105,7 @@ def generate_quotation_pdf(quotation, items, party):
         
         row = [
             str(idx),
-            size_str,
+            label_para,
             spec_para, # Wrapped
             str(item.ply),
             str(item.quantity) if item.quantity else "1000",
@@ -183,7 +189,8 @@ def generate_whatsapp_link(quotation, party, total_amount):
     item_summaries = []
     for item in quotation.items:
         size_str = f"{item.length/25.4:.1f}x{item.width/25.4:.1f}x{item.height/25.4:.1f}"
-        item_summaries.append(f"{size_str} ({item.ply} Ply)")
+        name_str = f"*{item.box_name}* " if item.box_name else ""
+        item_summaries.append(f"{name_str}{size_str} ({item.ply} Ply)")
     
     item_text = ", ".join(item_summaries)
 
