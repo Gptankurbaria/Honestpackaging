@@ -23,11 +23,13 @@ def generate_quotation_pdf(quotation, items, party):
     normal_style = styles['Normal']
     
     # --- Header Image ---
-    if os.path.exists("header.jpg"):
+    from modules.utils import get_resource_path
+    header_img = get_resource_path("header.jpg")
+    if os.path.exists(header_img):
         # Width of letter is 8.5 inch. Margins are 0.5 each -> 7.5 inch usable.
         # Image aspect ratio check? Let's assume banner.
         # Set width to 7.5 inch, allow height to scale (preserveRatio)
-        im = Image("header.jpg", width=7.5*inch, height=2.5*inch)
+        im = Image(header_img, width=7.5*inch, height=2.5*inch)
         im.hAlign = 'CENTER'
         elements.append(im)
         elements.append(Spacer(1, 0.2 * inch))

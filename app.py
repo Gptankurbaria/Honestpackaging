@@ -9,13 +9,30 @@ st.set_page_config(page_title="Honest Packaging Costing", layout="wide", page_ic
 
 from modules.auth import login_page, logout
 
+import os
+import time
+import logging
+from database import init_db, SessionLocal
+from models import User
+from modules.backup_utils import auto_backup_check
+
+from modules.utils import get_resource_path
+
+# 0. App Version & Logging
+VERSION = "1.2.0"
+logging.basicConfig(filename="error.log", level=logging.ERROR, 
+                    format='%(asctime)s %(levelname)s:%(message)s')
+
 # Initialize Database
 init_db()
+auto_backup_check()
 
 # Load Custom CSS
 def local_css(file_name):
-    with open(file_name) as f:
-        st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
+    full_path = get_resource_path(file_name)
+    if os.path.exists(full_path):
+        with open(full_path) as f:
+            st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
 
 local_css("style.css")
 
@@ -27,13 +44,15 @@ if "user_role" not in st.session_state or st.session_state["user_role"] is None:
 # Sidebar
 # Sidebar Header
 import os
-if os.path.exists("sidebar_header.png"):
-    st.sidebar.image("sidebar_header.png", use_container_width=True)
+sidebar_logo = get_resource_path("sidebar_header.png")
+if os.path.exists(sidebar_logo):
+    st.sidebar.image(sidebar_logo, use_container_width=True)
 else:
     st.sidebar.title(f"📦 Honest Packaging")
 # st.sidebar.caption(f"Logged in as: {st.session_state['username']} ({st.session_state['user_role']})")
 
 st.sidebar.title("Navigation")
+st.sidebar.caption(f"v{VERSION} | Honest Packaging")
 
 # Define menu based on role
 # Define menu based on role
@@ -123,26 +142,128 @@ elif selected_menu == "4. User Details":
         
         db.close()
 
+        # --- DATABASE BACKUP SECTION ---
+        st.divider()
+        st.subheader("💾 Database Backup & Restore")
+        from modules.backup_utils import create_backup, list_backups, restore_backup, delete_backup, get_backup_dir
+        from models import Settings
+        
+        db = SessionLocal()
+        
+        # 1. Path Configuration
+        current_path = get_backup_dir()
+        with st.expander("⚙️ Configure Backup Path", expanded=False):
+            new_path = st.text_input("Local Storage Path", value=current_path, help="e.g. D:/Backups/BoxCosting")
+            if st.button("Save Path"):
+                # Update settings table
+                s = db.query(Settings).filter(Settings.key == "backup_path").first()
+                if not s:
+                    s = Settings(key="backup_path", value=new_path)
+                    db.add(s)
+                else:
+                    s.value = new_path
+                db.commit()
+                st.success(f"Path updated to: {new_path}")
+                st.rerun()
+                
+            if st.button("Reset to Default (backups/)"):
+                s = db.query(Settings).filter(Settings.key == "backup_path").first()
+                if s:
+                    s.value = "backups"
+                    db.commit()
+                st.rerun()
+
+        st.caption(f"Current Path: `{os.path.abspath(current_path)}`")
+        
+        col_b1, col_b2 = st.columns(2)
+        if col_b1.button("🔹 Backup Now", use_container_width=True):
+            success, path = create_backup()
+            if success:
+                st.success(f"Backup created: {os.path.basename(path)}")
+            else:
+                st.error(f"Backup failed: {path}")
+        
+        backups = list_backups()
+        if backups:
+            st.markdown("### Available Backups")
+            for b in backups:
+                b_cols = st.columns([3, 1, 1])
+                b_cols[0].write(f"📄 {b}")
+                
+                # Restore Logic
+                with b_cols[1]:
+                    if st.button("🔄 Restore", key=f"res_{b}"):
+                        st.session_state[f"confirm_restore_{b}"] = True
+                
+                # Delete Logic
+                if b_cols[2].button("🗑️", key=f"del_b_{b}"):
+                    delete_backup(b)
+                    st.rerun()
+                
+                # Confirmation Popup for Restore
+                if st.session_state.get(f"confirm_restore_{b}", False):
+                    st.warning(f"CRITICAL: This will overwrite ALL current data with backup '{b}'. Are you sure?")
+                    c1, c2 = st.columns(2)
+                    if c1.button("YES, Restore", key=f"yes_res_{b}"):
+                        success, msg = restore_backup(b)
+                        if success:
+                            st.success(msg)
+                            st.session_state[f"confirm_restore_{b}"] = False
+                            time.sleep(1)
+                            st.rerun()
+                        else:
+                            st.error(msg)
+                    if c2.button("Cancel", key=f"no_res_{b}"):
+                        st.session_state[f"confirm_restore_{b}"] = False
+                        st.rerun()
+        else:
+            st.info("No backups found.")
+
     st.divider()
     
-    st.subheader("📧 Email Configuration Setup")
-    st.markdown("""
-    To enable email functionality, you need to configure your SMTP settings in the secrets file.
-    
-    **1. Locate/Create Secrets File:**
-    - **Local:** `.streamlit/secrets.toml` inside your project folder.
-    - **Cloud:** App Dashboard -> Settings -> Secrets.
-    
-    **2. Configuration Format:**
-    Copy and paste the following into the file:
-    ```toml
-    [smtp]
-    server = "smtp.gmail.com"
-    port = 587
-    username = "your_email@gmail.com"
-    password = "your_app_password"
-    ```
-    
-    > **Note:** For Gmail, use an **App Password** (enabled in Google Account > Security), NOT your login password.
-    """)
+    # --- EMAIL CONFIGURATION SECTION ---
+    if st.session_state.get("user_role") == "Admin":
+        st.divider()
+        st.subheader("📧 Email SMTP Configuration")
+        
+        secrets_path = os.path.join(".streamlit", "secrets.toml")
+        
+        # Load current values
+        current_smtp = {
+            "server": "smtp.gmail.com",
+            "port": 587,
+            "username": "",
+            "password": ""
+        }
+        
+        if os.path.exists(secrets_path):
+            try:
+                import tomllib # Python 3.11+
+                with open(secrets_path, "rb") as f:
+                    data = tomllib.load(f)
+                    if "smtp" in data:
+                        current_smtp.update(data["smtp"])
+            except:
+                # Fallback for older python or parsing error
+                pass
+
+        with st.expander("📝 Edit SMTP Settings", expanded=False):
+            with st.form("smtp_form"):
+                srv = st.text_input("SMTP Server", value=current_smtp["server"])
+                prt = st.number_input("Port", value=int(current_smtp["port"]), step=1)
+                usr = st.text_input("Email / Username", value=current_smtp["username"])
+                pwd = st.text_input("App Password", value=current_smtp["password"], type="password")
+                
+                if st.form_submit_button("Update Configuration"):
+                    os.makedirs(".streamlit", exist_ok=True)
+                    with open(secrets_path, "w") as f:
+                        f.write("[smtp]\n")
+                        f.write(f'server = "{srv}"\n')
+                        f.write(f"port = {prt}\n")
+                        f.write(f'username = "{usr}"\n')
+                        f.write(f'password = "{pwd}"\n')
+                    st.success("Secrets updated! Please restart the application for changes to take effect.")
+                    st.rerun()
+
+    st.divider()
 

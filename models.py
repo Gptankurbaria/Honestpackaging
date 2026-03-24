@@ -90,3 +90,9 @@ class ReelSize(Base):
     width = Column(Float, index=True) # Usually in Inches (e.g. 52.0)
     unit = Column(String, default="Inch") # Inch, cm, mm
     is_active = Column(Boolean, default=True)
+
+class Settings(Base):
+    __tablename__ = "settings"
+    id = Column(Integer, primary_key=True, index=True)
+    key = Column(String, unique=True, index=True)
+    value = Column(String)

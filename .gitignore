@@ -3,3 +3,8 @@ __pycache__/
 *$py.class
 .streamlit/secrets.toml
 modules/__pycache__/
+dist/
+build/
+*.spec
+backups/
+error.log
